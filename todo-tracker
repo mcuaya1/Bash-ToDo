@@ -1,0 +1,46 @@
+#!/bin/sh
+
+TODOLIST_CONFIG=${HOME}/.config/TODO
+TODOLIST="list.txt"
+if [ ! -d "${TODOLIST_CONFIG}" ]; then
+	echo "Todo list does not exists. Generating default directory..."
+	mkdir -p "${TODOLIST_CONFIG}"
+	touch "${TODOLIST_CONFIG}/${TODOLIST}"
+	exit 1
+fi
+
+while getopts "a:d:p" flag; do
+	case $flag in
+		a)
+		ADD="$OPTARG"
+		;;
+		d)
+		DELETE="$OPTARG"
+		;;
+		p)
+		cat "${TODOLIST_CONFIG}/${TODOLIST}"
+		exit 1
+		;;
+		\?)
+		echo "Unknown error"
+		exit 1
+		;;
+	esac
+done
+
+if [ ! -z "${ADD}" ] && [ -z "${DELETE}"]; then
+	echo "Adding ${ADD} to list..."
+	COUNT=$(wc -l "${TODOLIST_CONFIG}/${TODOLIST}" | cut -d " " -f1)
+	echo "* ${ADD}" >> "${TODOLIST_CONFIG}/${TODOLIST}"
+	echo "Updated to do list"
+	exit 1 
+elif [ ! -z "${DELETE}" ] && [ -z "${ADD}" ]; then
+	echo "Deleting ${DELETE}) from to do list..."
+	LINE=$(grep "${DELETE})" "${TODOLIST_CONFIG}/${TODOLIST}")
+	sed -i "${DELETE}d" "${TODOLIST_CONFIG}/${TODOLIST}"
+	echo "Updated to do list"
+	exit 1
+else
+	echo "Only use one flag!"
+	exit 1 
+fi
